@@ -45,16 +45,14 @@ public class ClienteRepositorio {
     }
 
     public List<Pessoa> buscarTotos(){
+
         List<Pessoa> pessoas = new ArrayList<Pessoa>();
-
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT CODIGO,NOME,EMAIL,PHONE FROM CLIENTE ");
-
+        sql.append("SELECT CODIGO,NOME,EMAIL,PHONE ");
+        sql.append("FROM CLIENTE");
         Cursor resultado = conection.rawQuery(sql.toString(),null);
-
         if(resultado.getCount() > 0){
             resultado.moveToFirst();
-
             do {
                 Pessoa ps = new Pessoa();
 

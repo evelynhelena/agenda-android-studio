@@ -1,5 +1,6 @@
 package com.example.agenda;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -9,16 +10,16 @@ import com.example.agenda.database.AgendaOpenHelper;
 import com.example.agenda.dominio.entidades.Pessoa;
 import com.example.agenda.dominio.repositorio.ClienteRepositorio;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class ActMain extends AppCompatActivity {
 
     private RecyclerView lstPersons;
     private  FloatingActionButton fab;
-    private SQLiteDatabase conection;
+    private SQLiteDatabase conexao;
     private AgendaOpenHelper agendaOpenHelper;
 
     private PessoaAdapter pessoaAdapter;
@@ -41,10 +42,11 @@ public class ActMain extends AppCompatActivity {
 
         fab = findViewById(R.id.fab);
         lstPersons = (RecyclerView)findViewById(R.id.lstDados);
-
+        createConection();
+        lstPersons.setHasFixedSize(true);
         LinearLayoutManager LinearLayoutManager = new LinearLayoutManager(this);
         lstPersons.setLayoutManager(LinearLayoutManager);
-        clienteRepositorio = new ClienteRepositorio(conection);
+        clienteRepositorio = new ClienteRepositorio(conexao);
         List<Pessoa> dados =  clienteRepositorio.buscarTotos();
         pessoaAdapter = new PessoaAdapter(dados);
 
@@ -55,12 +57,12 @@ public class ActMain extends AppCompatActivity {
     private void createConection(){
         try {
             agendaOpenHelper = new AgendaOpenHelper(this);
-            conection = agendaOpenHelper.getWritableDatabase();
-            AlertDialog.Builder dlg =  new AlertDialog.Builder(this);
-            dlg.setTitle("sucesso");
-            dlg.setMessage("deu certo");
-            dlg.setNeutralButton("OK",null);
-            dlg.show();
+            conexao = agendaOpenHelper.getWritableDatabase();
+            Context contexto = getApplicationContext();
+            String texto = "Conexção criada com sucesso";
+            int duracao = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(contexto, texto,duracao);
+            toast.show();
         }catch (SQLException ex){
             AlertDialog.Builder dlg =  new AlertDialog.Builder(this);
             dlg.setTitle("ERRO");
@@ -72,7 +74,14 @@ public class ActMain extends AppCompatActivity {
 
     public void cadastrarPerson(View  view){
         Intent cadastro_pessoas = new Intent(ActMain.this, ActCadPerson.class);
-        startActivity(cadastro_pessoas);
+        startActivityForResult(cadastro_pessoas, 0);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        List<Pessoa> dados = clienteRepositorio.buscarTotos();
+        pessoaAdapter = new PessoaAdapter(dados);
+        lstPersons.setAdapter(pessoaAdapter);
+    }
 }

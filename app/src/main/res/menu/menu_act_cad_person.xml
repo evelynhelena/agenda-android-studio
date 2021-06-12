@@ -6,6 +6,6 @@
         android:id="@+id/action_save"
         android:title="Salvar" />
     <item
-        android:id="@+id/action_cancelar"
-        android:title="Calcelar" />
+        android:id="@+id/action_excluir"
+        android:title="Excluir" />
 </menu>

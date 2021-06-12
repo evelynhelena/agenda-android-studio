@@ -1,5 +1,6 @@
 package com.example.agenda;
 
+import android.content.Context;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -41,22 +42,35 @@ public class ActCadPerson extends AppCompatActivity {
         setContentView(R.layout.activity_act_cad_person);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         edtNome  = (EditText)findViewById(R.id.idName);
         edtEmail = (EditText)findViewById(R.id.idEmail);
         edtPhone = (EditText)findViewById(R.id.idPhone);
         createConection();
+        verificaParametro();
+    }
+
+    private void verificaParametro(){
+        Bundle bundle = getIntent().getExtras();
+        pessoa = new Pessoa();
+        if(bundle != null && bundle.containsKey("pessoa")){
+            pessoa = (Pessoa) bundle.getSerializable("pessoa");
+            edtNome.setText(pessoa.nome);
+            edtEmail.setText(pessoa.email);
+            edtPhone.setText(pessoa.phone);
+        }
     }
 
     private void createConection(){
         try {
             agendaOpenHelper = new AgendaOpenHelper(this);
             conection = agendaOpenHelper.getWritableDatabase();
-            AlertDialog.Builder dlg =  new AlertDialog.Builder(this);
-            dlg.setTitle("sucesso");
-            dlg.setMessage("deu certo");
-            dlg.setNeutralButton("OK",null);
-            dlg.show();
+            Context contexto = getApplicationContext();
+            String texto = "Conexção criada com sucesso";
+            int duracao = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(contexto, texto,duracao);
+            toast.show();
             cliente = new ClienteRepositorio(conection);
 
         }catch (SQLException ex){
@@ -76,10 +90,13 @@ public class ActCadPerson extends AppCompatActivity {
     }
 
     private void confirm(){
-        pessoa = new Pessoa();
         if(!validaCampos()){
             try{
-                cliente.insert(pessoa);
+                if(pessoa.codigo == 0){
+                    cliente.insert(pessoa);
+                }else{
+                    cliente.update(pessoa);
+                }
                 finish();
             }catch (SQLException ex){
                 AlertDialog.Builder dlg =  new AlertDialog.Builder(this);
@@ -138,12 +155,14 @@ public class ActCadPerson extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         switch (id){
+            case android.R.id.home:
+                finish();
+                break;
             case R.id.action_save:
                 confirm();
-//                Toast.makeText(this, "Botão OK Selecionado", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.action_cancelar:
-//                Toast.makeText(this, "Botão Cancelar Selecionado", Toast.LENGTH_SHORT).show();
+            case R.id.action_excluir:
+                cliente.delete(pessoa.codigo);
                 finish();
                 break;
         }
